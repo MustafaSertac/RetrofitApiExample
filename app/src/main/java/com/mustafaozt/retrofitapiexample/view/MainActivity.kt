@@ -8,6 +8,9 @@ import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.mustafaozt.retrofitapiexample.adapter.MessageAdapter
 import com.mustafaozt.retrofitapiexample.databinding.ActivityMainBinding
 import com.mustafaozt.retrofitapiexample.remote.ApiService
 import com.mustafaozt.retrofitapiexample.util.RetrofitHelper
@@ -22,17 +25,27 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var apiService: ApiService
     private lateinit var progressbar:ProgressBar
-    private lateinit var textView:TextView
+
+    private lateinit var recyclerView: RecyclerView
+    private val adapter=MessageAdapter()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding= ActivityMainBinding.inflate(layoutInflater)
         viewModel=ViewModelProvider(this).get(MainActivityViewModel::class.java)
         setContentView(binding!!.root)
-        textView= binding!!.textView
+
+        binding?.let {
+            recyclerView=it.recycleviewExample
+            recyclerView.layoutManager=LinearLayoutManager(this)
+            recyclerView.adapter=adapter
+
+
+        }
 progressbar=binding!!.progressBar
 
 onSubcribe()
 viewModel.getMessage()
+        viewModel.getMessageList("1")
 
 
 
@@ -44,7 +57,7 @@ viewModel.getMessage()
 
             if(it!=null){
 
- textView.setText(it.body)
+ println(it.body)
 
             }
             else {
@@ -60,6 +73,15 @@ viewModel.getMessage()
 
         }
     })
+    viewModel.messageList.observe(this, Observer {
+        if(it.isSuccessful){
+            for( item in 0 until (it.body()?.size ?: 0)){
+                println(it.body()?.get(item)?.email)
+                adapter.setItems(it.body())
+            }
+        }
+    })
     }
+
 
 }
